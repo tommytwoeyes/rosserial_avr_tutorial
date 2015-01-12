@@ -1,3 +1,11 @@
+/**
+ * Atmega1284PHardware.h
+ *
+ * Defines the hardware interface for the ROS NodeHandle object to use to 
+ * communicate between the AVR node and ROS master via UART (thus the name,
+ * of the package: rosserial_client).
+ */
+
 #ifndef _ATMEGA1284P_HARDWARE_H_
 #define _ATMEGA1284P_HARDWARE_H_
 
