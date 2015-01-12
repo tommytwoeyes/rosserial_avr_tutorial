@@ -46,7 +46,7 @@ namespace std_msgs
       offset += 3;
       data_length = data_lengthT;
       for( uint8_t i = 0; i < data_length; i++){
-      this->st_data |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      this->st_data =  ((uint32_t) (*(inbuffer + offset)));
       this->st_data |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
       this->st_data |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
       this->st_data |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);

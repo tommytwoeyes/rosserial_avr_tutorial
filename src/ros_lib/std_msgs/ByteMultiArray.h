@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include "ros/msg.h"
 #include "std_msgs/MultiArrayLayout.h"
-#include "std_msgs/byte.h"
 
 namespace std_msgs
 {
@@ -16,8 +15,8 @@ namespace std_msgs
     public:
       std_msgs::MultiArrayLayout layout;
       uint8_t data_length;
-      std_msgs::byte st_data;
-      std_msgs::byte * data;
+      int8_t st_data;
+      int8_t * data;
 
     virtual int serialize(unsigned char *outbuffer) const
     {
@@ -28,7 +27,13 @@ namespace std_msgs
       *(outbuffer + offset++) = 0;
       *(outbuffer + offset++) = 0;
       for( uint8_t i = 0; i < data_length; i++){
-      offset += this->data[i].serialize(outbuffer + offset);
+      union {
+        int8_t real;
+        uint8_t base;
+      } u_datai;
+      u_datai.real = this->data[i];
+      *(outbuffer + offset + 0) = (u_datai.base >> (8 * 0)) & 0xFF;
+      offset += sizeof(this->data[i]);
       }
       return offset;
     }
@@ -39,12 +44,19 @@ namespace std_msgs
       offset += this->layout.deserialize(inbuffer + offset);
       uint8_t data_lengthT = *(inbuffer + offset++);
       if(data_lengthT > data_length)
-        this->data = (std_msgs::byte*)realloc(this->data, data_lengthT * sizeof(std_msgs::byte));
+        this->data = (int8_t*)realloc(this->data, data_lengthT * sizeof(int8_t));
       offset += 3;
       data_length = data_lengthT;
       for( uint8_t i = 0; i < data_length; i++){
-      offset += this->st_data.deserialize(inbuffer + offset);
-        memcpy( &(this->data[i]), &(this->st_data), sizeof(std_msgs::byte));
+      union {
+        int8_t real;
+        uint8_t base;
+      } u_st_data;
+      u_st_data.base = 0;
+      u_st_data.base |= ((uint8_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      this->st_data = u_st_data.real;
+      offset += sizeof(this->st_data);
+        memcpy( &(this->data[i]), &(this->st_data), sizeof(int8_t));
       }
      return offset;
     }

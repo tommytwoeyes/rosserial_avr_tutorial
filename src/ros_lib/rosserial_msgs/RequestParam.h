@@ -13,23 +13,24 @@ static const char REQUESTPARAM[] = "rosserial_msgs/RequestParam";
   class RequestParamRequest : public ros::Msg
   {
     public:
-      char * name;
+      const char* name;
 
     virtual int serialize(unsigned char *outbuffer) const
     {
       int offset = 0;
-      uint32_t * length_name = (uint32_t *)(outbuffer + offset);
-      *length_name = strlen( (const char*) this->name);
+      uint32_t length_name = strlen(this->name);
+      memcpy(outbuffer + offset, &length_name, sizeof(uint32_t));
       offset += 4;
-      memcpy(outbuffer + offset, this->name, *length_name);
-      offset += *length_name;
+      memcpy(outbuffer + offset, this->name, length_name);
+      offset += length_name;
       return offset;
     }
 
     virtual int deserialize(unsigned char *inbuffer)
     {
       int offset = 0;
-      uint32_t length_name = *(uint32_t *)(inbuffer + offset);
+      uint32_t length_name;
+      memcpy(&length_name, (inbuffer + offset), sizeof(uint32_t));
       offset += 4;
       for(unsigned int k= offset; k< offset+length_name; ++k){
           inbuffer[k-1]=inbuffer[k];
@@ -98,11 +99,11 @@ static const char REQUESTPARAM[] = "rosserial_msgs/RequestParam";
       *(outbuffer + offset++) = 0;
       *(outbuffer + offset++) = 0;
       for( uint8_t i = 0; i < strings_length; i++){
-      uint32_t * length_stringsi = (uint32_t *)(outbuffer + offset);
-      *length_stringsi = strlen( (const char*) this->strings[i]);
+      uint32_t length_stringsi = strlen(this->strings[i]);
+      memcpy(outbuffer + offset, &length_stringsi, sizeof(uint32_t));
       offset += 4;
-      memcpy(outbuffer + offset, this->strings[i], *length_stringsi);
-      offset += *length_stringsi;
+      memcpy(outbuffer + offset, this->strings[i], length_stringsi);
+      offset += length_stringsi;
       }
       return offset;
     }
@@ -154,7 +155,8 @@ static const char REQUESTPARAM[] = "rosserial_msgs/RequestParam";
       offset += 3;
       strings_length = strings_lengthT;
       for( uint8_t i = 0; i < strings_length; i++){
-      uint32_t length_st_strings = *(uint32_t *)(inbuffer + offset);
+      uint32_t length_st_strings;
+      memcpy(&length_st_strings, (inbuffer + offset), sizeof(uint32_t));
       offset += 4;
       for(unsigned int k= offset; k< offset+length_st_strings; ++k){
           inbuffer[k-1]=inbuffer[k];

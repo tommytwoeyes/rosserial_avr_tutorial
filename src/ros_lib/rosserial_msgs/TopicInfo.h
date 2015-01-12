@@ -13,9 +13,9 @@ namespace rosserial_msgs
   {
     public:
       uint16_t topic_id;
-      char * topic_name;
-      char * message_type;
-      char * md5sum;
+      const char* topic_name;
+      const char* message_type;
+      const char* md5sum;
       int32_t buffer_size;
       enum { ID_PUBLISHER = 0 };
       enum { ID_SUBSCRIBER = 1 };
@@ -24,6 +24,7 @@ namespace rosserial_msgs
       enum { ID_PARAMETER_REQUEST = 6 };
       enum { ID_LOG = 7 };
       enum { ID_TIME = 10 };
+      enum { ID_TX_STOP = 11 };
 
     virtual int serialize(unsigned char *outbuffer) const
     {
@@ -31,21 +32,21 @@ namespace rosserial_msgs
       *(outbuffer + offset + 0) = (this->topic_id >> (8 * 0)) & 0xFF;
       *(outbuffer + offset + 1) = (this->topic_id >> (8 * 1)) & 0xFF;
       offset += sizeof(this->topic_id);
-      uint32_t * length_topic_name = (uint32_t *)(outbuffer + offset);
-      *length_topic_name = strlen( (const char*) this->topic_name);
+      uint32_t length_topic_name = strlen(this->topic_name);
+      memcpy(outbuffer + offset, &length_topic_name, sizeof(uint32_t));
       offset += 4;
-      memcpy(outbuffer + offset, this->topic_name, *length_topic_name);
-      offset += *length_topic_name;
-      uint32_t * length_message_type = (uint32_t *)(outbuffer + offset);
-      *length_message_type = strlen( (const char*) this->message_type);
+      memcpy(outbuffer + offset, this->topic_name, length_topic_name);
+      offset += length_topic_name;
+      uint32_t length_message_type = strlen(this->message_type);
+      memcpy(outbuffer + offset, &length_message_type, sizeof(uint32_t));
       offset += 4;
-      memcpy(outbuffer + offset, this->message_type, *length_message_type);
-      offset += *length_message_type;
-      uint32_t * length_md5sum = (uint32_t *)(outbuffer + offset);
-      *length_md5sum = strlen( (const char*) this->md5sum);
+      memcpy(outbuffer + offset, this->message_type, length_message_type);
+      offset += length_message_type;
+      uint32_t length_md5sum = strlen(this->md5sum);
+      memcpy(outbuffer + offset, &length_md5sum, sizeof(uint32_t));
       offset += 4;
-      memcpy(outbuffer + offset, this->md5sum, *length_md5sum);
-      offset += *length_md5sum;
+      memcpy(outbuffer + offset, this->md5sum, length_md5sum);
+      offset += length_md5sum;
       union {
         int32_t real;
         uint32_t base;
@@ -62,10 +63,11 @@ namespace rosserial_msgs
     virtual int deserialize(unsigned char *inbuffer)
     {
       int offset = 0;
-      this->topic_id |= ((uint16_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      this->topic_id =  ((uint16_t) (*(inbuffer + offset)));
       this->topic_id |= ((uint16_t) (*(inbuffer + offset + 1))) << (8 * 1);
       offset += sizeof(this->topic_id);
-      uint32_t length_topic_name = *(uint32_t *)(inbuffer + offset);
+      uint32_t length_topic_name;
+      memcpy(&length_topic_name, (inbuffer + offset), sizeof(uint32_t));
       offset += 4;
       for(unsigned int k= offset; k< offset+length_topic_name; ++k){
           inbuffer[k-1]=inbuffer[k];
@@ -73,7 +75,8 @@ namespace rosserial_msgs
       inbuffer[offset+length_topic_name-1]=0;
       this->topic_name = (char *)(inbuffer + offset-1);
       offset += length_topic_name;
-      uint32_t length_message_type = *(uint32_t *)(inbuffer + offset);
+      uint32_t length_message_type;
+      memcpy(&length_message_type, (inbuffer + offset), sizeof(uint32_t));
       offset += 4;
       for(unsigned int k= offset; k< offset+length_message_type; ++k){
           inbuffer[k-1]=inbuffer[k];
@@ -81,7 +84,8 @@ namespace rosserial_msgs
       inbuffer[offset+length_message_type-1]=0;
       this->message_type = (char *)(inbuffer + offset-1);
       offset += length_message_type;
-      uint32_t length_md5sum = *(uint32_t *)(inbuffer + offset);
+      uint32_t length_md5sum;
+      memcpy(&length_md5sum, (inbuffer + offset), sizeof(uint32_t));
       offset += 4;
       for(unsigned int k= offset; k< offset+length_md5sum; ++k){
           inbuffer[k-1]=inbuffer[k];
@@ -104,7 +108,7 @@ namespace rosserial_msgs
     }
 
     const char * getType(){ return "rosserial_msgs/TopicInfo"; };
-    const char * getMD5(){ return "63aa5e8f1bdd6f35c69fe1a1b9d28e9f"; };
+    const char * getMD5(){ return "0ad51f88fc44892f8c10684077646005"; };
 
   };
 

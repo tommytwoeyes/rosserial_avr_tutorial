@@ -48,7 +48,7 @@ namespace std_msgs
       offset += this->st_dim.deserialize(inbuffer + offset);
         memcpy( &(this->dim[i]), &(this->st_dim), sizeof(std_msgs::MultiArrayDimension));
       }
-      this->data_offset |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      this->data_offset =  ((uint32_t) (*(inbuffer + offset)));
       this->data_offset |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
       this->data_offset |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
       this->data_offset |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);

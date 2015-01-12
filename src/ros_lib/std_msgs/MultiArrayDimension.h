@@ -12,18 +12,18 @@ namespace std_msgs
   class MultiArrayDimension : public ros::Msg
   {
     public:
-      char * label;
+      const char* label;
       uint32_t size;
       uint32_t stride;
 
     virtual int serialize(unsigned char *outbuffer) const
     {
       int offset = 0;
-      uint32_t * length_label = (uint32_t *)(outbuffer + offset);
-      *length_label = strlen( (const char*) this->label);
+      uint32_t length_label = strlen(this->label);
+      memcpy(outbuffer + offset, &length_label, sizeof(uint32_t));
       offset += 4;
-      memcpy(outbuffer + offset, this->label, *length_label);
-      offset += *length_label;
+      memcpy(outbuffer + offset, this->label, length_label);
+      offset += length_label;
       *(outbuffer + offset + 0) = (this->size >> (8 * 0)) & 0xFF;
       *(outbuffer + offset + 1) = (this->size >> (8 * 1)) & 0xFF;
       *(outbuffer + offset + 2) = (this->size >> (8 * 2)) & 0xFF;
@@ -40,7 +40,8 @@ namespace std_msgs
     virtual int deserialize(unsigned char *inbuffer)
     {
       int offset = 0;
-      uint32_t length_label = *(uint32_t *)(inbuffer + offset);
+      uint32_t length_label;
+      memcpy(&length_label, (inbuffer + offset), sizeof(uint32_t));
       offset += 4;
       for(unsigned int k= offset; k< offset+length_label; ++k){
           inbuffer[k-1]=inbuffer[k];
@@ -48,12 +49,12 @@ namespace std_msgs
       inbuffer[offset+length_label-1]=0;
       this->label = (char *)(inbuffer + offset-1);
       offset += length_label;
-      this->size |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      this->size =  ((uint32_t) (*(inbuffer + offset)));
       this->size |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
       this->size |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
       this->size |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
       offset += sizeof(this->size);
-      this->stride |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      this->stride =  ((uint32_t) (*(inbuffer + offset)));
       this->stride |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
       this->stride |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
       this->stride |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);

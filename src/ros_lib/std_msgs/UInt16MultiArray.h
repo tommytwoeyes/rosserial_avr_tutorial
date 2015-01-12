@@ -44,7 +44,7 @@ namespace std_msgs
       offset += 3;
       data_length = data_lengthT;
       for( uint8_t i = 0; i < data_length; i++){
-      this->st_data |= ((uint16_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      this->st_data =  ((uint16_t) (*(inbuffer + offset)));
       this->st_data |= ((uint16_t) (*(inbuffer + offset + 1))) << (8 * 1);
       offset += sizeof(this->st_data);
         memcpy( &(this->data[i]), &(this->st_data), sizeof(uint16_t));

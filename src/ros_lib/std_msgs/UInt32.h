@@ -28,7 +28,7 @@ namespace std_msgs
     virtual int deserialize(unsigned char *inbuffer)
     {
       int offset = 0;
-      this->data |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      this->data =  ((uint32_t) (*(inbuffer + offset)));
       this->data |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
       this->data |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
       this->data |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
