@@ -1,0 +1,10 @@
+.dep
+*.eep
+*.elf
+*.hex
+*.lst
+*.map
+*.o
+*.sym
+*.lss
+.DS_Store
