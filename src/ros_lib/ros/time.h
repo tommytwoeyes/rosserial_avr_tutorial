@@ -32,39 +32,40 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "ros.h"
-#include "ros/time.h"
+#ifndef ROS_TIME_H_
+#define ROS_TIME_H_
+
+#include <ros/duration.h>
+#include <math.h>
 
 namespace ros
 {
-  void normalizeSecNSec(unsigned long& sec, unsigned long& nsec){
-    unsigned long nsec_part= nsec % 1000000000UL;
-    unsigned long sec_part = nsec / 1000000000UL;
-    sec += sec_part;
-    nsec = nsec_part;
-  }
+  void normalizeSecNSec(unsigned long &sec, unsigned long &nsec);
 
-  Time& Time::fromNSec(long t)
+  class Time
   {
-    sec = t / 1000000000;
-    nsec = t % 1000000000;
-    normalizeSecNSec(sec, nsec);
-    return *this;
-  }
+    public:
+      unsigned long sec, nsec;
 
-  Time& Time::operator +=(const Duration &rhs)
-  {
-    sec += rhs.sec;
-    nsec += rhs.nsec;
-    normalizeSecNSec(sec, nsec);
-    return *this; 
-  }
+      Time() : sec(0), nsec(0) {}
+      Time(unsigned long _sec, unsigned long _nsec) : sec(_sec), nsec(_nsec)
+      {
+        normalizeSecNSec(sec, nsec);  
+      } 
+        
+      double toSec() const { return (double)sec + 1e-9*(double)nsec; };
+      void fromSec(double t) { sec = (unsigned long) floor(t); nsec = (unsigned long) round((t-sec) * 1e9); };
 
-  Time& Time::operator -=(const Duration &rhs){
-    sec += -rhs.sec;
-    nsec += -rhs.nsec;
-    normalizeSecNSec(sec, nsec);
-    return *this;
-  }
+      unsigned long toNsec() { return (unsigned long)sec*1000000000ull + (unsigned long)nsec; };
+      Time& fromNSec(long t);
+
+      Time& operator +=(const Duration &rhs);
+      Time& operator -=(const Duration &rhs);
+
+      static Time now();
+      static void setNow( Time & new_now);
+  };
 
 }
+
+#endif

@@ -32,39 +32,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "ros.h"
-#include "ros/time.h"
+#ifndef _ROS_MSG_H_
+#define _ROS_MSG_H_
 
-namespace ros
-{
-  void normalizeSecNSec(unsigned long& sec, unsigned long& nsec){
-    unsigned long nsec_part= nsec % 1000000000UL;
-    unsigned long sec_part = nsec / 1000000000UL;
-    sec += sec_part;
-    nsec = nsec_part;
-  }
+namespace ros {
 
-  Time& Time::fromNSec(long t)
+  /* Base Message Type */
+  class Msg
   {
-    sec = t / 1000000000;
-    nsec = t % 1000000000;
-    normalizeSecNSec(sec, nsec);
-    return *this;
-  }
-
-  Time& Time::operator +=(const Duration &rhs)
-  {
-    sec += rhs.sec;
-    nsec += rhs.nsec;
-    normalizeSecNSec(sec, nsec);
-    return *this; 
-  }
-
-  Time& Time::operator -=(const Duration &rhs){
-    sec += -rhs.sec;
-    nsec += -rhs.nsec;
-    normalizeSecNSec(sec, nsec);
-    return *this;
-  }
+    public:
+      virtual int serialize(unsigned char *outbuffer) const = 0;
+	  virtual int deserialize(unsigned char *data) = 0;
+      virtual const char * getType() = 0;
+      virtual const char * getMD5() = 0;
+  };
 
 }
+
+#endif

@@ -32,39 +32,45 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "ros.h"
-#include "ros/time.h"
+#ifndef _ROS_SERVICE_SERVER_H_
+#define _ROS_SERVICE_SERVER_H_
 
-namespace ros
-{
-  void normalizeSecNSec(unsigned long& sec, unsigned long& nsec){
-    unsigned long nsec_part= nsec % 1000000000UL;
-    unsigned long sec_part = nsec / 1000000000UL;
-    sec += sec_part;
-    nsec = nsec_part;
-  }
+#include "rosserial_msgs/TopicInfo.h"
 
-  Time& Time::fromNSec(long t)
-  {
-    sec = t / 1000000000;
-    nsec = t % 1000000000;
-    normalizeSecNSec(sec, nsec);
-    return *this;
-  }
+#include "publisher.h"
+#include "subscriber.h"
 
-  Time& Time::operator +=(const Duration &rhs)
-  {
-    sec += rhs.sec;
-    nsec += rhs.nsec;
-    normalizeSecNSec(sec, nsec);
-    return *this; 
-  }
+namespace ros {
 
-  Time& Time::operator -=(const Duration &rhs){
-    sec += -rhs.sec;
-    nsec += -rhs.nsec;
-    normalizeSecNSec(sec, nsec);
-    return *this;
-  }
+  template<typename MReq , typename MRes>
+  class ServiceServer : public Subscriber_ {
+    public:
+      typedef void(*CallbackT)(const MReq&,  MRes&);
+
+      ServiceServer(const char* topic_name, CallbackT cb) :
+        pub(topic_name, &resp, rosserial_msgs::TopicInfo::ID_SERVICE_SERVER + rosserial_msgs::TopicInfo::ID_PUBLISHER)
+      {
+        this->topic_ = topic_name;
+        this->cb_ = cb;
+      }
+
+      // these refer to the subscriber
+      virtual void callback(unsigned char *data){
+        req.deserialize(data);
+        cb_(req,resp);
+        pub.publish(&resp);
+      }
+      virtual const char * getMsgType(){ return this->req.getType(); }
+      virtual const char * getMsgMD5(){ return this->req.getMD5(); }
+      virtual int getEndpointType(){ return rosserial_msgs::TopicInfo::ID_SERVICE_SERVER + rosserial_msgs::TopicInfo::ID_SUBSCRIBER; }
+
+      MReq req;
+      MRes resp;
+      Publisher pub;
+    private:
+      CallbackT cb_;
+  };
 
 }
+
+#endif

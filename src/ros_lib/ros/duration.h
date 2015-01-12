@@ -32,39 +32,30 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "ros.h"
-#include "ros/time.h"
+#ifndef _ROS_DURATION_H_
+#define _ROS_DURATION_H_
 
-namespace ros
-{
-  void normalizeSecNSec(unsigned long& sec, unsigned long& nsec){
-    unsigned long nsec_part= nsec % 1000000000UL;
-    unsigned long sec_part = nsec / 1000000000UL;
-    sec += sec_part;
-    nsec = nsec_part;
-  }
+namespace ros {
 
-  Time& Time::fromNSec(long t)
+  void normalizeSecNSecSigned(long& sec, long& nsec);
+
+  class Duration
   {
-    sec = t / 1000000000;
-    nsec = t % 1000000000;
-    normalizeSecNSec(sec, nsec);
-    return *this;
-  }
+    public:
+      long sec, nsec; 
+      
+      Duration() : sec(0), nsec(0) {}
+      Duration(long _sec, long _nsec) : sec(_sec), nsec(_nsec)
+      {
+        normalizeSecNSecSigned(sec, nsec);
+      }
 
-  Time& Time::operator +=(const Duration &rhs)
-  {
-    sec += rhs.sec;
-    nsec += rhs.nsec;
-    normalizeSecNSec(sec, nsec);
-    return *this; 
-  }
-
-  Time& Time::operator -=(const Duration &rhs){
-    sec += -rhs.sec;
-    nsec += -rhs.nsec;
-    normalizeSecNSec(sec, nsec);
-    return *this;
-  }
+      Duration& operator+=(const Duration &rhs);
+      Duration& operator-=(const Duration &rhs);
+      Duration& operator*=(double scale);
+  };
 
 }
+
+#endif
+

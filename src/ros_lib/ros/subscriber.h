@@ -32,39 +32,57 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "ros.h"
-#include "ros/time.h"
+#ifndef ROS_SUBSCRIBER_H_
+#define ROS_SUBSCRIBER_H_
 
-namespace ros
-{
-  void normalizeSecNSec(unsigned long& sec, unsigned long& nsec){
-    unsigned long nsec_part= nsec % 1000000000UL;
-    unsigned long sec_part = nsec / 1000000000UL;
-    sec += sec_part;
-    nsec = nsec_part;
-  }
+#include "rosserial_msgs/TopicInfo.h"
 
-  Time& Time::fromNSec(long t)
+namespace ros {
+
+  /* Base class for objects subscribers. */
+  class Subscriber_
   {
-    sec = t / 1000000000;
-    nsec = t % 1000000000;
-    normalizeSecNSec(sec, nsec);
-    return *this;
-  }
+    public:
+      virtual void callback(unsigned char *data)=0;
+      virtual int getEndpointType()=0;
 
-  Time& Time::operator +=(const Duration &rhs)
-  {
-    sec += rhs.sec;
-    nsec += rhs.nsec;
-    normalizeSecNSec(sec, nsec);
-    return *this; 
-  }
+      // id_ is set by NodeHandle when we advertise 
+      int id_;
 
-  Time& Time::operator -=(const Duration &rhs){
-    sec += -rhs.sec;
-    nsec += -rhs.nsec;
-    normalizeSecNSec(sec, nsec);
-    return *this;
-  }
+      virtual const char * getMsgType()=0;
+      virtual const char * getMsgMD5()=0;
+      const char * topic_;
+  };
+
+
+  /* Actual subscriber, templated on message type. */
+  template<typename MsgT>
+  class Subscriber: public Subscriber_{
+    public:
+      typedef void(*CallbackT)(const MsgT&);
+      MsgT msg;
+
+      Subscriber(const char * topic_name, CallbackT cb, int endpoint=rosserial_msgs::TopicInfo::ID_SUBSCRIBER) :
+        cb_(cb),
+        endpoint_(endpoint)
+      {
+        topic_ = topic_name;
+      };
+
+      virtual void callback(unsigned char* data){
+        msg.deserialize(data);
+        this->cb_(msg);
+      }
+
+      virtual const char * getMsgType(){ return this->msg.getType(); }
+      virtual const char * getMsgMD5(){ return this->msg.getMD5(); }
+      virtual int getEndpointType(){ return endpoint_; }
+
+    private:
+      CallbackT cb_;
+      int endpoint_;
+  };
 
 }
+
+#endif
